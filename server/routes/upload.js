@@ -1,7 +1,6 @@
 const express = require("express");
 const multer = require("multer");
 const { encrypt, getDek } = require("../services/encryptionService");
-const { storeDEKInFirebase } = require("../services/firebaseService");
 const { s3Uploadv2 } = require("../services/s3Service");
 
 const router = express.Router();
@@ -18,16 +17,10 @@ router.post("/api/upload", upload.single("file"), async (req, res) => {
   ).encryptedData;
 
   // Upload encrypted file to S3
-  const file = await s3Uploadv2(req, res);
+  const { file, uuid } = await s3Uploadv2(req, res);
 
-  // Store DEK in Firebase
-  await storeDEKInFirebase(
-    file.Key.split("/")[1],
-    dek.toString("hex"),
-    req.query.user
-  );
-
-  return res.json({ status: "success", file });
+  // Send DEK to frontend
+  return res.json({ status: "success", dek: dek.toString("hex"), uuid: uuid });
 });
 
 module.exports = router;

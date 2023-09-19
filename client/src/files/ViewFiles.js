@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import useUser from "../hooks/useUser";
 import axios from "axios";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase";
 
 const ViewFiles = () => {
   // Define state variables
@@ -9,13 +11,32 @@ const ViewFiles = () => {
 
   // Function to trigger file download
   const triggerDownload = async (fileKey) => {
+    const [user, fileName] = fileKey.split("/");
+
+    const retrieveDEKfromFirebase = async (fileName, email) => {
+      const docRef = doc(db, "users", email);
+      const docSnapshot = await getDoc(docRef);
+      if (docSnapshot.exists()) {
+        return docSnapshot.data()[fileName];
+      } else {
+        console.error("No DEK found for file:", fileName);
+        return null;
+      }
+    };
+
+    const DEK = await retrieveDEKfromFirebase(fileName, user);
+
+    console.log("DEK:", DEK);
+
     try {
-      const response = await axios.get(`/api/download?key=${fileKey}`, {
-        responseType: "blob",
-      });
+      const response = await axios.get(
+        `/api/download?key=${fileKey}&dek=${DEK}`,
+        {
+          responseType: "blob",
+        }
+      );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
-
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", fileKey.split("/")[1]);

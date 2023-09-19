@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import useUser from "../hooks/useUser";
+import { db } from "../firebase";
+import { doc, setDoc } from "firebase/firestore";
 
 const UploadFile = () => {
   // Define state variables
@@ -13,32 +15,46 @@ const UploadFile = () => {
     setSelectedFile(event.target.files[0]);
   };
 
+  // Function to store DEK in Firestore
+  const storeDEKInFirebase = async (filename, DEK, email) => {
+    const docRef = doc(db, "users", email);
+    await setDoc(
+      docRef,
+      {
+        [filename]: DEK,
+      },
+      { merge: true }
+    );
+  };
+
   // Function to handle file upload
   const handleUpload = async () => {
     if (!selectedFile) {
-      alert("Please select a file to upload.");
+      setStatus("Select a file to upload");
       return;
     }
-    try {
-      setStatus("Uploading...");
-      const formData = new FormData();
-      formData.append("file", selectedFile, selectedFile.name);
 
-      // Check if userData is not null
-      if (userData) {
-        const response = await axios.post(
-          `/api/upload?user=${userData.email}`,
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-        if (response.status === 200) {
-          setStatus("File uploaded successfully.");
-        }
-      }
+    const fileName = selectedFile.name;
+    const email = userData.email;
+
+    setStatus("Uploading...");
+    const formData = new FormData();
+    formData.append("file", selectedFile, fileName);
+
+    try {
+      const response = await axios.post(`/api/upload?user=${email}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setStatus(
+        `Your DEK is ${response.data.dek}. Uploading DEK to firestore now...`
+      );
+
+      // Store DEK in Firestore
+      await storeDEKInFirebase(`${response.data.uuid}-${fileName}`, response.data.dek, email);
+      setStatus("DEK uploaded to Firestore successfully.");
     } catch (error) {
       console.error("Error uploading file:", error);
       setStatus("Error during upload. Please try again.");

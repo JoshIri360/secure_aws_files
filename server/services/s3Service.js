@@ -1,4 +1,4 @@
-const uuid = require("uuid").v4;
+const getUUID = require("uuid").v4;
 const { Upload } = require("@aws-sdk/lib-storage");
 const { S3, GetObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
@@ -9,7 +9,8 @@ const s3 = new S3({
 });
 
 exports.s3Uploadv2 = async (req) => {
-  const key = `${req.query.user}/${uuid()}-${req.file.originalname}`;
+  const uuid = getUUID();
+  const key = `${req.query.user}/${uuid}-${req.file.originalname}`;
   const uploadParams = {
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: key,
@@ -17,12 +18,12 @@ exports.s3Uploadv2 = async (req) => {
   };
 
   try {
-    const result = await new Upload({
+    const file = await new Upload({
       client: s3,
       params: uploadParams,
     }).done();
 
-    return result;
+    return { file, uuid };
   } catch (err) {
     throw new Error("Internal server error", err);
   }
