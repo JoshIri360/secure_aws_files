@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { db } from "../firebase";
+import { getFirestore, collection, addDoc, setDoc, doc } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
 const CreateAccount = () => {
@@ -28,6 +30,7 @@ const CreateAccount = () => {
     }
     try {
       await createUserWithEmailAndPassword(getAuth(), email, password);
+      setDoc(doc(db, "users", email), {});
       navigate("/profile");
     } catch (e) {
       setError(e.message);

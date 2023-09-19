@@ -12,14 +12,18 @@
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/lib-storage": "^3.410.0",
+    "@aws-sdk/s3-request-presigner": "^3.414.0",
     "aws-sdk": "^2.1456.0",
     "aws-sdk-js-codemod": "^0.17.7",
     "circular-json": "^0.5.9",
     "cors": "^2.8.5",
+    "crypto-js": "^4.1.1",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "firebase": "^10.4.0",
     "multer": "^1.4.5-lts.1",
     "nodemon": "^3.0.1",
+    "util": "^0.12.5",
     "uuid": "^9.0.1"
   }
 }
