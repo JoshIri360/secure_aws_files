@@ -11,6 +11,13 @@ const ViewFiles = () => {
 
   // Function to trigger file download
   const triggerDownload = async (fileKey) => {
+    const myDEK = prompt("Enter your DEK");
+
+    if (myDEK.length !== 32) {
+      alert("DEK must be 32 characters");
+      return;
+    }
+
     const [user, fileName] = fileKey.split("/");
 
     const retrieveDEKfromFirebase = async (fileName, email) => {
@@ -26,7 +33,10 @@ const ViewFiles = () => {
 
     const DEK = await retrieveDEKfromFirebase(fileName, user);
 
-    console.log("DEK:", DEK);
+    if (myDEK !== DEK) {
+      alert("Incorrect DEK");
+      return;
+    }
 
     try {
       const response = await axios.get(

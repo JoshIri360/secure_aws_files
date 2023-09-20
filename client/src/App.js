@@ -6,7 +6,7 @@ import CreateAccount from "./pages/CreateAccount";
 import Header from "./components/Header";
 import Profile from "./pages/Profile";
 import UploadFile from "./files/UploadFile";
-import ViewFiles from "./files/ViewFiles.js";
+import DownloadFile from "./files/DownloadFile.js";
 
 function App() {
   return (
@@ -20,7 +20,7 @@ function App() {
           <Route path="/create-user" element={<CreateAccount />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/uploads" element={<UploadFile />} />
-          <Route path="/view-files" element={<ViewFiles />} />
+          <Route path="/view-files" element={<DownloadFile />} />
         </Routes>
       </div>
     </BrowserRouter>
