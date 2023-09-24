@@ -8,26 +8,33 @@ const router = express.Router();
 router.get(
   "/api/files",
   asyncMiddleware(async (req, res) => {
-    // Get all files of user from S3
-    const files = await getObjectsOfUser(req.query.user);
+    try {
+      // Get all files of user from S3
+      const files = await getObjectsOfUser(req.query.user);
 
-    // If user doesn't have files return
-    if (!files) {
-      return res.json({ status: "success", files: [] });
+      // If user doesn't have files return
+      if (!files) {
+        return res.json({ status: "success", files: [] });
+      }
+
+      // Get file names from file keys
+      const fileNames = files.map((file) => {
+        const parts = file.Key.split("-");
+        return parts[parts.length - 1];
+      });
+
+      // Add file names to files array
+      files.forEach((file, index) => {
+        file.name = fileNames[index];
+      });
+
+      return res.json({ status: "success", files: files });
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .json({ status: "error", message: "Internal server error" });
     }
-
-    // Get file names from file keys
-    const fileNames = files.map((file) => {
-      const parts = file.Key.split("-");
-      return parts[parts.length - 1];
-    });
-
-    // Add file names to files array
-    files.forEach((file, index) => {
-      file.name = fileNames[index];
-    });
-
-    return res.json({ status: "success", files: files });
   })
 );
 

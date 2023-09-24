@@ -8,6 +8,7 @@ const UploadFile = () => {
   // Define state variables
   const [selectedFile, setSelectedFile] = useState(null);
   const [status, setStatus] = useState("");
+  const [filedek, setFileDek] = useState("");
   const { userData, isLoading } = useUser();
 
   // Function to handle file selection
@@ -47,17 +48,22 @@ const UploadFile = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-
-      setStatus(
-        `Your DEK is ${response.data.dek}. Uploading DEK to firestore now...`
-      );
-
-      // Store DEK in Firestore
-      await storeDEKInFirebase(`${response.data.uuid}-${fileName}`, response.data.dek, email);
-      setStatus("DEK uploaded to Firestore successfully.");
+      if (response.data.status === "success") {
+        setFileDek(`Your DEK is ${response.data.dek}.`);
+        setStatus(`Uploading DEK to firestore now...`);
+        // Store DEK in Firestore
+        await storeDEKInFirebase(
+          `${response.data.uuid}-${fileName}`,
+          response.data.dek,
+          email
+        );
+        setStatus("DEK uploaded to Firestore successfully.");
+      } else {
+        throw new Error(response.data.status);
+      }
     } catch (error) {
       console.error("Error uploading file:", error);
-      setStatus("Error during upload. Please try again.");
+      setStatus(error.message);
     }
   };
 
@@ -71,6 +77,7 @@ const UploadFile = () => {
           <input type="file" onChange={handleFileChange} />
           <button onClick={handleUpload}>Upload</button>
           <div>Status: {status}</div>
+          <div>{filedek}</div>
         </div>
       ) : (
         <div>You must be logged in to upload a file.</div>

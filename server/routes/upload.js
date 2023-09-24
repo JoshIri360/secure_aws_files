@@ -10,17 +10,22 @@ const upload = multer({ storage: storage, limits: { fileSize: 40000000 } });
 router.post("/api/upload", upload.single("file"), async (req, res) => {
   // Genereate DEK
   const dek = getDek();
-
   // Use DEK to encrypt file
   req.file.buffer = (
     await encrypt(req.file.buffer, Buffer.from(dek))
   ).encryptedData;
-
   // Upload encrypted file to S3
-  const { file, uuid } = await s3Uploadv2(req, res);
-
-  // Send DEK to frontend
-  return res.json({ status: "success", dek: dek.toString("hex"), uuid: uuid });
+  const { status, uuid } = await s3Uploadv2(req);
+  if (status === "success") {
+    // Send DEK to frontend
+    return res.json({
+      status: "success",
+      dek: dek.toString("hex"),
+      uuid: uuid,
+    });
+  } else {
+    return res.json({ status: status, dek: null, uuid: uuid });
+  }
 });
 
 module.exports = router;

@@ -11,10 +11,14 @@ const ViewFiles = () => {
 
   // Function to trigger file download
   const triggerDownload = async (fileKey) => {
-    const myDEK = prompt("Enter your DEK");
+    let myDEK = "";
 
-    if (myDEK.length !== 32) {
-      alert("DEK must be 32 characters");
+    myDEK = prompt("Enter your DEK");
+
+    if (!myDEK) {
+      alert("No DEK Entered");
+    } else if (myDEK.length !== 64) {
+      alert("DEK must be 64 characters");
       return;
     }
 
