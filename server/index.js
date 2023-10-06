@@ -8,6 +8,7 @@ const port = 5000;
 const uploadRoutes = require("./routes/upload");
 const downloadRoutes = require("./routes/download");
 const filesRoutes = require("./routes/files");
+const getKeysRoutes = require("./routes/getKeys");
 
 const errorMiddleware = require("./middleware/errorMiddleware");
 
@@ -18,6 +19,7 @@ app.use(errorMiddleware);
 app.use("/", uploadRoutes);
 app.use("/", downloadRoutes);
 app.use("/", filesRoutes);
+app.use("/", getKeysRoutes);
 
 app.listen(port, () => {
   console.log(`Running on port ${port}`);

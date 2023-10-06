@@ -1,25 +1,19 @@
-require("dotenv").config();
-const crypto = require("crypto");
+var RSA = require("hybrid-crypto-js").RSA;
+var Crypt = require("hybrid-crypto-js").Crypt;
+let fs = require("fs");
 
-const ivstring = process.env.SECRET;
-const algorithm = "aes-256-cbc";
-
-// Convert Initialization Vector from a string to a buffer
-const iv = Buffer.from(ivstring, "hex");
-
-exports.getDek = () => crypto.randomBytes(32);
-
-exports.encrypt = async (buff, dek) => {
-  let cipher = crypto.createCipheriv(algorithm, dek, iv);
-  let encrypted = cipher.update(buff);
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return { iv: iv.toString("hex"), encryptedData: encrypted.toString("hex") };
+// Exported function for encryption
+exports.encrypt = async (buffer, publicKey, userEntropy) => {
+  var crypt = new Crypt({ entropy: userEntropy });
+  const encrypted = crypt.encrypt(publicKey, buffer);
+  return encrypted;
 };
 
-exports.decrypt = async (buff, dek) => {
-  let encryptedText = Buffer.from(buff, "hex");
-  let decipher = crypto.createDecipheriv(algorithm, dek, iv);
-  let decrypted = decipher.update(encryptedText);
-  decrypted = Buffer.concat([decrypted, decipher.final()]);
-  return decrypted;
+exports.decrypt = async (encrypted, privateKey, userEntropy) => {
+  privateKey = fs.readFileSync("./keys/PrivateKey.txt");
+  var crypt = new Crypt({ entropy: userEntropy });
+  const decrypted = crypt.decrypt(privateKey.toString(), encrypted);
+  // Convert the base64 string back to buffer
+  fs.writeFileSync("Buffer2.txt", decrypted.message);
+  return Buffer.from(decrypted.message, "base64");
 };

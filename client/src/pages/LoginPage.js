@@ -23,7 +23,7 @@ const LoginPage = () => {
       return;
     }
     try {
-      await signInWithEmailAndPassword(getAuth(), email, password);
+      await 
       navigate("/profile");
     } catch (e) {
       setError(e.message);

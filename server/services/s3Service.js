@@ -1,4 +1,3 @@
-const getUUID = require("uuid").v4;
 const { Upload } = require("@aws-sdk/lib-storage");
 const {
   S3,
@@ -30,39 +29,43 @@ const getAllS3Files = async (s3Opts) => {
   return totalFiles;
 };
 
-exports.s3Uploadv2 = async (req) => {
-  const uuid = getUUID();
-  const key = `${req.query.user}/${uuid}-${req.file.originalname}`;
+exports.s3Uploadv2 = async (req, res) => {
+  const key = `${req.query.user}/${req.file.originalname}`;
+
   const uploadParams = {
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: key,
     Body: req.file.buffer,
   };
-  // Get the list of keys
-  var params = {
-    Bucket: process.env.AWS_BUCKET_NAME,
-    Prefix: `${req.query.user}`,
-  };
-  const allKeys = await getAllS3Files(params);
-  // Check if the file exists
-  for (const k of allKeys) {
-    if (k.Key.includes(req.file.originalname)) {
-      return { status: "File already exists", uuid: null };
-    }
-  }
+
   try {
     const file = await new Upload({
       client: s3,
       params: uploadParams,
     }).done();
-    return { status: "success", file, uuid };
+    return { status: 200, message: "success" };
   } catch (err) {
-    console.error("Internal server error", err);
-    return { status: "Internal server error", uuid: null };
+    return { status: 400, message: "Internal Server Error" };
+  }
+};
+
+exports.checkDuplicates = async (req, res) => {
+  var params = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Prefix: `${req.query.user}`,
+  };
+
+  const allKeys = await getAllS3Files(params);
+
+  for (const k of allKeys) {
+    if (k.Key.includes(req.file.originalname)) {
+      return { status: 409, message: "File already exists" };
+    }
   }
 };
 
 exports.getObjectsOfUser = async (user) => {
+  "user", user;
   try {
     const result = await s3.listObjectsV2({
       Bucket: process.env.AWS_BUCKET_NAME,
@@ -78,11 +81,9 @@ exports.getObjectsOfUser = async (user) => {
 };
 
 exports.getObject = async (req) => {
-  const key = req.query.key;
-
   const command = new GetObjectCommand({
     Bucket: process.env.AWS_BUCKET_NAME,
-    Key: key,
+    Key: req.body.fileName,
   });
 
   const signedUrl = await getSignedUrl(s3, command);
