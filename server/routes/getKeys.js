@@ -16,8 +16,6 @@ router.post("/api/getKeys", async (req, res) => {
     privateKey = keyPair.privateKey;
   });
 
-  fs.writeFileSync("./keys/PublicKey.txt", publicKey);
-  fs.writeFileSync("./keys/PrivateKey.txt", privateKey);
   res.send({ publicKey, privateKey });
 });
 
